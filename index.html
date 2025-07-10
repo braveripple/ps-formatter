@@ -10,8 +10,14 @@
     <h1>PowerShellインデント整形</h1>
     <textarea id="input" rows="20" cols="80" placeholder="ここにPowerShellコードを貼ってください"></textarea>
     <br>
+    <label for="indentSize">インデント幅:</label>
+    <select id="indentSize">
+        <option value="2">2</option>
+        <option value="4">4</option>
+    </select>
     <button onclick="formatCode()">整形する</button>
     <h2>整形後コード</h2>
+    <button onclick="copyOutput()">コピー</button>
     <pre id="output" style="background:#f0f0f0; padding:1em;"></pre>
 
     <script>
@@ -19,7 +25,7 @@
             const code = document.getElementById("input").value;
             const lines = code.split("\n");
             let indentLevel = 0;
-            const indentSize = 2;
+            const indentSize = parseInt(document.getElementById("indentSize").value, 10);
             let inHereString = false;
             const formatted = lines.map(line => {
                 let trimmed = line.trim();
@@ -31,15 +37,31 @@
                     return " ".repeat(indentLevel * indentSize) + trimmed;
                 }
 
-                if (trimmed.startsWith("}")) indentLevel = Math.max(indentLevel - 1, 0);
+                if (trimmed.match(/^\}/)) {
+                    indentLevel = Math.max(indentLevel - 1, 0);
+                } else if (trimmed.match(/^(else|elseif|catch)/i)) {
+                    indentLevel = Math.max(indentLevel - 1, 0);
+                }
 
                 const result = " ".repeat(indentLevel * indentSize) + trimmed;
 
-                if (trimmed.endsWith("{")) indentLevel++;
+                if (trimmed.endsWith("{")) {
+                    indentLevel++;
+                }
+
                 return result;
             }).join("\n");
 
             document.getElementById("output").textContent = formatted;
+        }
+
+        function copyOutput() {
+            const output = document.getElementById("output").textContent;
+            navigator.clipboard.writeText(output).then(() => {
+                alert("コピーしました！");
+            }).catch(err => {
+                alert("コピーに失敗しました: " + err);
+            });
         }
     </script>
 </body>
