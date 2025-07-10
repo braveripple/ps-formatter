@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <title>PowerShell インデント整形ツール</title>
+</head>
+
+<body>
+    <h1>PowerShellインデント整形</h1>
+    <textarea id="input" rows="20" cols="80" placeholder="ここにPowerShellコードを貼ってください"></textarea>
+    <br>
+    <button onclick="formatCode()">整形する</button>
+    <h2>整形後コード</h2>
+    <pre id="output" style="background:#f0f0f0; padding:1em;"></pre>
+
+    <script>
+        function formatCode() {
+            const code = document.getElementById("input").value;
+            const lines = code.split("\n");
+            let indentLevel = 0;
+            const indentSize = 2;
+            let inHereString = false;
+            const formatted = lines.map(line => {
+                let trimmed = line.trim();
+
+                // ヒアストリングの開始・終了チェック
+                if (trimmed.match(/^@['"]/)) inHereString = true;
+                if (inHereString) {
+                    if (trimmed.match(/['"]@$/)) inHereString = false;
+                    return " ".repeat(indentLevel * indentSize) + trimmed;
+                }
+
+                if (trimmed.startsWith("}")) indentLevel = Math.max(indentLevel - 1, 0);
+
+                const result = " ".repeat(indentLevel * indentSize) + trimmed;
+
+                if (trimmed.endsWith("{")) indentLevel++;
+                return result;
+            }).join("\n");
+
+            document.getElementById("output").textContent = formatted;
+        }
+    </script>
+</body>
+
+</html>
